@@ -1,6 +1,6 @@
+use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 use url::Url;
-use reqwest::header::{HeaderValue, CONTENT_TYPE};
 
 #[derive(Debug, Deserialize)]
 struct MemeTemplate {
@@ -31,6 +31,7 @@ enum Response<T> {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "lowercase")]
 enum CaptionFont {
     Impact,
     Arial,
@@ -95,11 +96,11 @@ async fn main() -> Result<(), reqwest::Error> {
         template_id: "61580".into(),
         username: "freeforall6".into(),
         password: "nsfw1234".into(),
-        font: None,
-        max_font_size: None,
+        font: Some(CaptionFont::Arial),
+        max_font_size: Some(42),
         boxes: vec![
             CaptionBox {
-                text: "text0".into(),
+                text: "".into(),
                 x: None,
                 y: None,
                 width: None,
@@ -116,21 +117,16 @@ async fn main() -> Result<(), reqwest::Error> {
                 color: None,
                 outline_color: None,
             },
-            CaptionBox {
-                text: "text2".into(),
-                x: None,
-                y: None,
-                width: None,
-                height: None,
-                color: None,
-                outline_color: None,
-            },
         ],
     };
+    println!("{}", serde_qs::to_string(&meme_caption).unwrap());
     let meme: Response<CaptionImageResponse> = reqwest::Client::new()
         .post("https://api.imgflip.com/caption_image")
-		.header(CONTENT_TYPE, HeaderValue::from_static("application/x-www-form-urlencoded"))
-		.body(serde_qs::to_string(&meme_caption).unwrap())
+        .header(
+            CONTENT_TYPE,
+            HeaderValue::from_static("application/x-www-form-urlencoded"),
+        )
+        .body(serde_qs::to_string(&meme_caption).unwrap())
         .send()
         .await?
         .json()
