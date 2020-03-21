@@ -39,8 +39,8 @@ struct ImageCaptionRequest {
 
 #[derive(Debug, Deserialize)]
 struct CaptionImageResponse {
-	url: Url,
-	page_url: Url,
+    url: Url,
+    page_url: Url,
 }
 
 #[tokio::main]
@@ -63,7 +63,7 @@ async fn main() -> Result<(), reqwest::Error> {
     };
     let meme: Response<CaptionImageResponse> = reqwest::Client::new()
         .post("https://api.imgflip.com/caption_image")
-        .query(&[
+        .form(&[
             ("template_id", meme_caption.template_id),
             ("username", meme_caption.username),
             ("password", meme_caption.password),
