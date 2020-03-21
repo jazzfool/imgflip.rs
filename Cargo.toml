@@ -10,4 +10,5 @@ edition = "2018"
 reqwest = { version = "0.10.4", features = ["json"] }
 tokio = { version = "0.2.13", features = ["macros"] }
 serde = { version = "1.0.105", features = ["derive"] }
+serde_qs = "0.5.2"
 url = { version = "2.1.1", features = ["serde"] }

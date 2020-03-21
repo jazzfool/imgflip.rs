@@ -1,5 +1,6 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
+use reqwest::header::{HeaderValue, CONTENT_TYPE};
 
 #[derive(Debug, Deserialize)]
 struct MemeTemplate {
@@ -29,12 +30,47 @@ enum Response<T> {
     },
 }
 
-struct ImageCaptionRequest {
+#[derive(Debug, Serialize)]
+enum CaptionFont {
+    Impact,
+    Arial,
+}
+
+#[derive(Debug, Serialize)]
+struct TopBottomCaptionRequest {
     template_id: String,
     username: String,
     password: String,
-    text0: String,
-    text1: String,
+    text_top: String,
+    text_bottom: String,
+    font: Option<CaptionFont>,
+    max_font_size: u32,
+}
+
+#[derive(Debug, Serialize)]
+struct CaptionBox {
+    text: String,
+    x: Option<u32>,
+    y: Option<u32>,
+    width: Option<u32>,
+    height: Option<u32>,
+    color: Option<String>,
+    outline_color: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct CaptionBoxesRequest {
+    template_id: String,
+    username: String,
+    password: String,
+    font: Option<CaptionFont>,
+    max_font_size: Option<u32>,
+    boxes: Vec<CaptionBox>,
+}
+
+enum ImageCaptionRequest {
+    TopBottomCaptionRequest(TopBottomCaptionRequest),
+    CaptionBoxesRequest(CaptionBoxesRequest),
 }
 
 #[derive(Debug, Deserialize)]
@@ -45,31 +81,56 @@ struct CaptionImageResponse {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let memes: Response<MemeTemplatesData> = reqwest::Client::new()
-        .get("https://api.imgflip.com/get_memes")
-        .send()
-        .await?
-        .json()
-        .await?;
+    /*
+        let memes: Response<MemeTemplatesData> = reqwest::Client::new()
+            .get("https://api.imgflip.com/get_memes")
+            .send()
+            .await?
+            .json()
+            .await?;
 
-    println!("{:#?}", memes);
-
-    let meme_caption = ImageCaptionRequest {
+        println!("{:#?}", memes);
+    */
+    let meme_caption = CaptionBoxesRequest {
         template_id: "61580".into(),
         username: "freeforall6".into(),
         password: "nsfw1234".into(),
-        text0: "text0".into(),
-        text1: "text1".into(),
+        font: None,
+        max_font_size: None,
+        boxes: vec![
+            CaptionBox {
+                text: "text0".into(),
+                x: None,
+                y: None,
+                width: None,
+                height: None,
+                color: None,
+                outline_color: None,
+            },
+            CaptionBox {
+                text: "text1".into(),
+                x: None,
+                y: None,
+                width: None,
+                height: None,
+                color: None,
+                outline_color: None,
+            },
+            CaptionBox {
+                text: "text2".into(),
+                x: None,
+                y: None,
+                width: None,
+                height: None,
+                color: None,
+                outline_color: None,
+            },
+        ],
     };
     let meme: Response<CaptionImageResponse> = reqwest::Client::new()
         .post("https://api.imgflip.com/caption_image")
-        .form(&[
-            ("template_id", meme_caption.template_id),
-            ("username", meme_caption.username),
-            ("password", meme_caption.password),
-            ("text0", meme_caption.text0),
-            ("text1", meme_caption.text1),
-        ])
+		.header(CONTENT_TYPE, HeaderValue::from_static("application/x-www-form-urlencoded"))
+		.body(serde_qs::to_string(&meme_caption).unwrap())
         .send()
         .await?
         .json()
