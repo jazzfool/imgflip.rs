@@ -80,8 +80,61 @@ struct CaptionImageResponse {
     page_url: Url,
 }
 
+#[derive(Debug)]
+pub enum ErrorKind {
+	Reqwest(reqwest::Error),
+	ApiError(String),
+}
+
+#[derive(Debug)]
+pub struct Error(ErrorKind);
+
+impl std::error::Error for Error {}
+
+impl std::fmt::Display for Error {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "todo")
+	}
+}
+
+impl From<reqwest::Error> for Error {
+	fn from(e: reqwest::Error) -> Self {
+		Self(ErrorKind::Reqwest(e))
+	}
+}
+
+pub type Result<T> = std::result::Result<T, Error>;
+
+pub struct Client {
+    client: reqwest::Client,
+}
+
+impl Client {
+    pub fn new() -> Self {
+        Client {
+            client: reqwest::Client::new(),
+        }
+    }
+
+    pub async fn memes(&self) -> Result<Vec<MemeTemplate>> {
+        let result = self.client
+            .get("https://api.imgflip.com/get_memes")
+            .send()
+            .await?
+            .json::<Response<MemeTemplatesData>>()
+            .await?;
+        match result {
+			Response::SuccessResponse{data, ..} => Ok(data.memes),
+			Response::FailureResponse{error_message, ..} => Err(Error(ErrorKind::ApiError(error_message))),
+		}
+    }
+}
+
 #[tokio::main]
-async fn main() -> Result<(), reqwest::Error> {
+async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
+	let memes = Client::new().memes().await?;
+	println!("{:#?}", memes);
+
     /*
         let memes: Response<MemeTemplatesData> = reqwest::Client::new()
             .get("https://api.imgflip.com/get_memes")
@@ -92,6 +145,7 @@ async fn main() -> Result<(), reqwest::Error> {
 
         println!("{:#?}", memes);
     */
+	/*
     let meme_caption = CaptionBoxesRequest {
         template_id: "61580".into(),
         username: "freeforall6".into(),
@@ -133,6 +187,6 @@ async fn main() -> Result<(), reqwest::Error> {
         .await?;
 
     println!("{:#?}", meme);
-
+	*/
     Ok(())
 }
