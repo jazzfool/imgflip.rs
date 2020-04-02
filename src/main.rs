@@ -38,7 +38,7 @@ enum CaptionFont {
 }
 
 #[derive(Debug, Serialize)]
-struct TopBottomCaptionRequest {
+pub struct TopBottomCaptionRequest {
     template_id: String,
     username: String,
     password: String,
@@ -49,7 +49,7 @@ struct TopBottomCaptionRequest {
 }
 
 #[derive(Debug, Serialize)]
-struct CaptionBox {
+pub struct CaptionBox {
     text: String,
     x: Option<u32>,
     y: Option<u32>,
@@ -60,7 +60,7 @@ struct CaptionBox {
 }
 
 #[derive(Debug, Serialize)]
-struct CaptionBoxesRequest {
+pub struct CaptionBoxesRequest {
     template_id: String,
     username: String,
     password: String,
@@ -69,7 +69,9 @@ struct CaptionBoxesRequest {
     boxes: Vec<CaptionBox>,
 }
 
-enum ImageCaptionRequest {
+#[derive(Debug, Serialize)]
+#[serde(untagged)]
+pub enum ImageCaptionRequest {
     TopBottomCaptionRequest(TopBottomCaptionRequest),
     CaptionBoxesRequest(CaptionBoxesRequest),
 }
@@ -138,23 +140,47 @@ impl Client {
     }
 }
 
+pub struct AccountClient {
+    //username: String,
+    //password: String,
+    client: reqwest::Client,
+}
+
+impl AccountClient {
+    pub fn new(username: String, password: String) -> Self {
+        AccountClient {
+            client: reqwest::Client::new(),
+        }
+    }
+
+    pub async fn caption_image(
+        &self,
+        image_caption: ImageCaptionRequest,
+    ) -> Result<CaptionImageResponse> {
+        let result = self
+            .client
+            .post("https://api.imgflip.com/caption_image")
+            .header(
+                CONTENT_TYPE,
+                HeaderValue::from_static("application/x-www-form-urlencoded"),
+            )
+            .body(serde_qs::to_string(&image_caption).unwrap())
+            .send()
+            .await?
+            .error_for_status()?
+            .json::<Response<CaptionImageResponse>>()
+            .await?;
+        err_for_failure(result)
+    }
+}
+
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let memes = Client::new().memes().await?;
     println!("{:#?}", memes);
 
-    /*
-        let memes: Response<MemeTemplatesData> = reqwest::Client::new()
-            .get("https://api.imgflip.com/get_memes")
-            .send()
-            .await?
-            .json()
-            .await?;
-
-        println!("{:#?}", memes);
-    */
-    /*
-    let meme_caption = CaptionBoxesRequest {
+    //*
+    let meme_caption = ImageCaptionRequest::CaptionBoxesRequest(CaptionBoxesRequest {
         template_id: "61580".into(),
         username: "freeforall6".into(),
         password: "nsfw1234".into(),
@@ -180,21 +206,11 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 outline_color: None,
             },
         ],
-    };
-    println!("{}", serde_qs::to_string(&meme_caption).unwrap());
-    let meme: Response<CaptionImageResponse> = reqwest::Client::new()
-        .post("https://api.imgflip.com/caption_image")
-        .header(
-            CONTENT_TYPE,
-            HeaderValue::from_static("application/x-www-form-urlencoded"),
-        )
-        .body(serde_qs::to_string(&meme_caption).unwrap())
-        .send()
-        .await?
-        .json()
+    });
+    let caption_image = AccountClient::new("".to_string(), "".to_string())
+        .caption_image(meme_caption)
         .await?;
-
-    println!("{:#?}", meme);
-    */
+    println!("{:#?}", caption_image);
+    //*/
     Ok(())
 }
