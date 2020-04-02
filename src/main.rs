@@ -131,6 +131,7 @@ impl Client {
             .get("https://api.imgflip.com/get_memes")
             .send()
             .await?
+            .error_for_status()?
             .json::<Response<MemeTemplatesData>>()
             .await?;
         err_for_failure(result).map(|r| r.memes)
