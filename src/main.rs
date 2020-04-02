@@ -85,6 +85,7 @@ struct CaptionImageResponse {
 #[derive(Debug)]
 pub enum ErrorKind {
     Reqwest(reqwest::Error),
+	SerdeQs(serde_qs::Error),
     ApiError(String),
 }
 
@@ -102,6 +103,12 @@ impl std::fmt::Display for Error {
 impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
         Self(ErrorKind::Reqwest(e))
+    }
+}
+
+impl From<serde_qs::Error> for Error {
+    fn from(e: serde_qs::Error) -> Self {
+        Self(ErrorKind::SerdeQs(e))
     }
 }
 
@@ -164,7 +171,7 @@ impl AccountClient {
                 CONTENT_TYPE,
                 HeaderValue::from_static("application/x-www-form-urlencoded"),
             )
-            .body(serde_qs::to_string(&image_caption).unwrap())
+            .body(serde_qs::to_string(&image_caption)?)
             .send()
             .await?
             .error_for_status()?
