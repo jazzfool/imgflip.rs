@@ -82,8 +82,8 @@ struct CaptionImageResponse {
 
 #[derive(Debug)]
 pub enum ErrorKind {
-	Reqwest(reqwest::Error),
-	ApiError(String),
+    Reqwest(reqwest::Error),
+    ApiError(String),
 }
 
 #[derive(Debug)]
@@ -92,18 +92,27 @@ pub struct Error(ErrorKind);
 impl std::error::Error for Error {}
 
 impl std::fmt::Display for Error {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "todo")
-	}
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "todo")
+    }
 }
 
 impl From<reqwest::Error> for Error {
-	fn from(e: reqwest::Error) -> Self {
-		Self(ErrorKind::Reqwest(e))
-	}
+    fn from(e: reqwest::Error) -> Self {
+        Self(ErrorKind::Reqwest(e))
+    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+fn err_for_failure<T>(response: Response<T>) -> Result<T> {
+    match response {
+        Response::SuccessResponse { data, .. } => Ok(data),
+        Response::FailureResponse { error_message, .. } => {
+            Err(Error(ErrorKind::ApiError(error_message)))
+        }
+    }
+}
 
 pub struct Client {
     client: reqwest::Client,
@@ -117,23 +126,21 @@ impl Client {
     }
 
     pub async fn memes(&self) -> Result<Vec<MemeTemplate>> {
-        let result = self.client
+        let result = self
+            .client
             .get("https://api.imgflip.com/get_memes")
             .send()
             .await?
             .json::<Response<MemeTemplatesData>>()
             .await?;
-        match result {
-			Response::SuccessResponse{data, ..} => Ok(data.memes),
-			Response::FailureResponse{error_message, ..} => Err(Error(ErrorKind::ApiError(error_message))),
-		}
+        err_for_failure(result).map(|r| r.memes)
     }
 }
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-	let memes = Client::new().memes().await?;
-	println!("{:#?}", memes);
+    let memes = Client::new().memes().await?;
+    println!("{:#?}", memes);
 
     /*
         let memes: Response<MemeTemplatesData> = reqwest::Client::new()
@@ -145,7 +152,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
         println!("{:#?}", memes);
     */
-	/*
+    /*
     let meme_caption = CaptionBoxesRequest {
         template_id: "61580".into(),
         username: "freeforall6".into(),
@@ -187,6 +194,6 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     println!("{:#?}", meme);
-	*/
+    */
     Ok(())
 }
