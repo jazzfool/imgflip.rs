@@ -49,12 +49,18 @@ enum CaptionFont {
 }
 
 #[derive(Debug, Serialize)]
-pub struct TopBottomCaptionRequest {
+pub struct CommonCaptionRequest {
     template_id: String,
+    font: Option<CaptionFont>,
+    max_font_size: Option<u32>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct TopBottomCaptionRequest {
+    #[serde(flatten)]
+    common: CommonCaptionRequest,
     text_top: String,
     text_bottom: String,
-    font: Option<CaptionFont>,
-    max_font_size: u32,
 }
 
 #[derive(Debug, Serialize)]
@@ -70,9 +76,8 @@ pub struct CaptionBox {
 
 #[derive(Debug, Serialize)]
 pub struct CaptionBoxesRequest {
-    template_id: String,
-    font: Option<CaptionFont>,
-    max_font_size: Option<u32>,
+    #[serde(flatten)]
+    common: CommonCaptionRequest,
     boxes: Vec<CaptionBox>,
 }
 
@@ -199,9 +204,11 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     //*
     let meme_caption = ImageCaptionRequest::CaptionBoxesRequest(CaptionBoxesRequest {
-        template_id: "61580".into(),
-        font: Some(CaptionFont::Arial),
-        max_font_size: Some(42),
+        common: CommonCaptionRequest {
+            template_id: "61580".into(),
+            font: Some(CaptionFont::Arial),
+            max_font_size: Some(42),
+        },
         boxes: vec![
             CaptionBox {
                 text: "".into(),
