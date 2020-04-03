@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 #[derive(Debug, Deserialize)]
-struct MemeTemplate {
+pub struct MemeTemplate {
     id: String,
     name: String,
     url: Url,
@@ -43,7 +43,7 @@ impl<T> Response<T> {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "lowercase")]
-enum CaptionFont {
+pub enum CaptionFont {
     Impact,
     Arial,
 }
@@ -89,7 +89,7 @@ pub enum ImageCaptionRequest {
 }
 
 #[derive(Debug, Deserialize)]
-struct CaptionImageResponse {
+pub struct CaptionImageResponse {
     url: Url,
     page_url: Url,
 }
@@ -168,8 +168,8 @@ impl AccountClient {
     pub fn new(username: String, password: String) -> Self {
         AccountClient {
             client: reqwest::Client::new(),
-            username: username,
-            password: password,
+            username,
+            password,
         }
     }
 
