@@ -30,6 +30,17 @@ enum Response<T> {
     },
 }
 
+impl<T> Response<T> {
+    fn convert(self) -> Result<T> {
+        match self {
+            Response::SuccessResponse { data, .. } => Ok(data),
+            Response::FailureResponse { error_message, .. } => {
+                Err(Error(ErrorKind::ApiError(error_message)))
+            }
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "lowercase")]
 enum CaptionFont {
@@ -85,7 +96,7 @@ struct CaptionImageResponse {
 #[derive(Debug)]
 pub enum ErrorKind {
     Reqwest(reqwest::Error),
-	SerdeQs(serde_qs::Error),
+    SerdeQs(serde_qs::Error),
     ApiError(String),
 }
 
@@ -114,15 +125,6 @@ impl From<serde_qs::Error> for Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-fn err_for_failure<T>(response: Response<T>) -> Result<T> {
-    match response {
-        Response::SuccessResponse { data, .. } => Ok(data),
-        Response::FailureResponse { error_message, .. } => {
-            Err(Error(ErrorKind::ApiError(error_message)))
-        }
-    }
-}
-
 pub struct Client {
     client: reqwest::Client,
 }
@@ -135,15 +137,15 @@ impl Client {
     }
 
     pub async fn memes(&self) -> Result<Vec<MemeTemplate>> {
-        let result = self
-            .client
+        self.client
             .get("https://api.imgflip.com/get_memes")
             .send()
             .await?
             .error_for_status()?
             .json::<Response<MemeTemplatesData>>()
-            .await?;
-        err_for_failure(result).map(|r| r.memes)
+            .await?
+            .convert()
+            .map(|r| r.memes)
     }
 }
 
@@ -164,8 +166,7 @@ impl AccountClient {
         &self,
         image_caption: ImageCaptionRequest,
     ) -> Result<CaptionImageResponse> {
-        let result = self
-            .client
+        self.client
             .post("https://api.imgflip.com/caption_image")
             .header(
                 CONTENT_TYPE,
@@ -176,8 +177,8 @@ impl AccountClient {
             .await?
             .error_for_status()?
             .json::<Response<CaptionImageResponse>>()
-            .await?;
-        err_for_failure(result)
+            .await?
+            .convert()
     }
 }
 
