@@ -154,8 +154,8 @@ impl Client {
 }
 
 pub struct AccountClient {
-    //username: String,
-    //password: String,
+    username: String,
+    password: String,
     client: reqwest::Client,
 }
 
@@ -163,12 +163,14 @@ impl AccountClient {
     pub fn new(username: String, password: String) -> Self {
         AccountClient {
             client: reqwest::Client::new(),
+            username: username,
+            password: password,
         }
     }
 
     pub async fn caption_image(
         &self,
-        image_caption: RequestAuthWrapper<ImageCaptionRequest>,
+        image_caption: ImageCaptionRequest,
     ) -> Result<CaptionImageResponse> {
         self.client
             .post("https://api.imgflip.com/caption_image")
@@ -176,7 +178,11 @@ impl AccountClient {
                 CONTENT_TYPE,
                 HeaderValue::from_static("application/x-www-form-urlencoded"),
             )
-            .body(serde_qs::to_string(&image_caption)?)
+            .body(serde_qs::to_string(&RequestAuthWrapper {
+                request: image_caption,
+                username: self.username.clone(),
+                password: self.password.clone(),
+            })?)
             .send()
             .await?
             .error_for_status()?
@@ -217,12 +223,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             },
         ],
     });
-    let caption_image = AccountClient::new("".to_string(), "".to_string())
-        .caption_image(RequestAuthWrapper {
-            request: meme_caption,
-            username: "freeforall6".into(),
-            password: "nsfw1234".into(),
-        })
+    let caption_image = AccountClient::new("freeforall6".to_string(), "nsfw1234".to_string())
+        .caption_image(meme_caption)
         .await?;
     println!("{:#?}", caption_image);
     //*/
