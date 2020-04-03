@@ -1,14 +1,10 @@
 use imgflip::{
-    AccountClient, CaptionBox, CaptionBoxesRequest, CaptionFont, Client, CommonCaptionRequest,
+    AccountClient, CaptionBox, CaptionBoxesRequest, CaptionFont, CommonCaptionRequest,
     ImageCaptionRequest,
 };
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    let memes = Client::new().memes().await?;
-    println!("{:#?}", memes);
-
-    //*
     let meme_caption = ImageCaptionRequest::CaptionBoxesRequest(CaptionBoxesRequest {
         common: CommonCaptionRequest {
             template_id: "61580".into(),
@@ -40,6 +36,6 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         .caption_image(meme_caption)
         .await?;
     println!("{:#?}", caption_image);
-    //*/
+
     Ok(())
 }
