@@ -51,8 +51,6 @@ enum CaptionFont {
 #[derive(Debug, Serialize)]
 pub struct TopBottomCaptionRequest {
     template_id: String,
-    username: String,
-    password: String,
     text_top: String,
     text_bottom: String,
     font: Option<CaptionFont>,
@@ -73,8 +71,6 @@ pub struct CaptionBox {
 #[derive(Debug, Serialize)]
 pub struct CaptionBoxesRequest {
     template_id: String,
-    username: String,
-    password: String,
     font: Option<CaptionFont>,
     max_font_size: Option<u32>,
     boxes: Vec<CaptionBox>,
@@ -98,6 +94,14 @@ pub enum ErrorKind {
     Reqwest(reqwest::Error),
     SerdeQs(serde_qs::Error),
     ApiError(String),
+}
+
+#[derive(Debug, Serialize)]
+pub struct RequestAuthWrapper<T> {
+    #[serde(flatten)]
+    request: T,
+    username: String,
+    password: String,
 }
 
 #[derive(Debug)]
@@ -164,7 +168,7 @@ impl AccountClient {
 
     pub async fn caption_image(
         &self,
-        image_caption: ImageCaptionRequest,
+        image_caption: RequestAuthWrapper<ImageCaptionRequest>,
     ) -> Result<CaptionImageResponse> {
         self.client
             .post("https://api.imgflip.com/caption_image")
@@ -190,8 +194,6 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     //*
     let meme_caption = ImageCaptionRequest::CaptionBoxesRequest(CaptionBoxesRequest {
         template_id: "61580".into(),
-        username: "freeforall6".into(),
-        password: "nsfw1234".into(),
         font: Some(CaptionFont::Arial),
         max_font_size: Some(42),
         boxes: vec![
@@ -216,7 +218,11 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         ],
     });
     let caption_image = AccountClient::new("".to_string(), "".to_string())
-        .caption_image(meme_caption)
+        .caption_image(RequestAuthWrapper {
+            request: meme_caption,
+            username: "freeforall6".into(),
+            password: "nsfw1234".into(),
+        })
         .await?;
     println!("{:#?}", caption_image);
     //*/
