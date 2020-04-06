@@ -81,6 +81,9 @@ impl<T> Response<T> {
     }
 }
 
+/// Font for [`CaptionBoxesRequest`](crate::CaptionBoxesRequest)
+///
+/// API defaults to `Impact`
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CaptionFont {
@@ -88,6 +91,7 @@ pub enum CaptionFont {
     Arial,
 }
 
+/// Text and other fields for image caption
 #[derive(Debug, Serialize)]
 pub struct CaptionBox {
     text: String,
@@ -99,6 +103,7 @@ pub struct CaptionBox {
     outline_color: Option<String>,
 }
 
+/// Builder for [`CaptionBox`](crate::CaptionBox)
 pub struct CaptionBoxBuilder {
     text: String,
     x: Option<u32>,
@@ -153,6 +158,7 @@ impl CaptionBoxBuilder {
     }
 }
 
+/// Request data to caption a meme template
 #[derive(Debug, Serialize)]
 pub struct CaptionBoxesRequest {
     template_id: String,
@@ -161,6 +167,7 @@ pub struct CaptionBoxesRequest {
     boxes: Vec<CaptionBox>,
 }
 
+/// Builder for [`CaptionBoxesRequest`](crate::CaptionBoxesRequest)
 pub struct CaptionBoxesRequestBuilder {
     template_id: String,
     font: Option<CaptionFont>,
@@ -225,10 +232,15 @@ impl CaptionImageResponse {
 /// [`Error`](std:error:Error) implementation for all crate errors
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    /// Error internal to `reqwest`
     #[error("HTTP request/response error")]
     Reqwest(#[from] reqwest::Error),
+
+    /// Error internal to `serde_qs`
     #[error("form querystring de/serialization error")]
     SerdeQs(#[from] serde_qs::Error),
+
+    /// API error message from `api.imgflip.com`
     #[error("API error: {0}")]
     ApiError(String),
 }
@@ -241,7 +253,8 @@ struct RequestAuthWrapper<T> {
     password: String,
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+/// [`Result`](std::result::Result) alias with crate's [`Error`](crate::Error)
+pub type Result<T> = std::result::Result<T, crate::Error>;
 
 /// Client for `api.imgflip.com` that obtains blank meme templates
 ///
@@ -268,9 +281,8 @@ impl Client {
         }
     }
 
-    /// Calls the `/get_memes` endpoint to return a list of popular meme templates
-    pub async fn memes(&self) -> Result<Vec<MemeTemplate>> {
-        self.client
+    async fn client_memes(client: &reqwest::Client) -> Result<Vec<MemeTemplate>> {
+        client
             .get("https://api.imgflip.com/get_memes")
             .send()
             .await?
@@ -279,6 +291,11 @@ impl Client {
             .await?
             .convert()
             .map(|r| r.memes)
+    }
+
+    /// Calls the `/get_memes` endpoint to return a list of popular meme templates
+    pub async fn memes(&self) -> Result<Vec<MemeTemplate>> {
+        Self::client_memes(&self.client).await
     }
 }
 
@@ -323,5 +340,10 @@ impl AccountClient {
             .json::<Response<CaptionImageResponse>>()
             .await?
             .convert()
+    }
+
+    /// Calls the `/get_memes` endpoint to return a list of popular meme templates
+    pub async fn memes(&self) -> Result<Vec<MemeTemplate>> {
+        Client::client_memes(&self.client).await
     }
 }
