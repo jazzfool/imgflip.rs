@@ -3,8 +3,23 @@ name = "imgflip"
 version = "0.1.0"
 authors = ["robo9k <robo9k@symlink.io>"]
 edition = "2018"
+description = """
+HTTP API wrapper for the meme generator `api.imgflip.com`
+"""
+readme = "README-crate.md"
+categories = [
+	"api-bindings",
+]
+keywords = [
+	"meme",
+	"imgflip",
+]
+repository = "https://github.com/robo9k/imgflip.rs"
+license = "MIT OR Apache-2.0"
+exclude = ["/examples/", ".gitignore"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[badges]
+maintenance = { status = "experimental" }
 
 [dependencies]
 reqwest = { version = "0.10.4", features = ["json"] }
