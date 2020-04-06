@@ -7,7 +7,7 @@ A [Rust](https://www.rust-lang.org/) HTTP API wrapper for the meme generator `ap
 
 [![crate version](https://img.shields.io/crates/v/imgflip)](https://crates.io/crates/imgflip)
 [![crate docs](https://docs.rs/imgflip/badge.svg)](https://docs.rs/imgflip)
-[![crate license](https://img.shields.io/crates/l/imgflip)](https://github.com/robo9k/imgflip/blob/master/COPYRIGHT)
+[![crate license](https://img.shields.io/crates/l/imgflip)](https://github.com/robo9k/imgflip.rs/blob/master/COPYRIGHT)
 
 # Usage
 
