@@ -176,17 +176,32 @@ impl From<serde_qs::Error> for Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// Client for `api.imgflip.com` that obtains blank meme templates
+///
+/// You should resuse `Client` instances, since they do internal connection pooling.
+/// # Example
+/// ```no_run
+/// # #[tokio::main]
+/// # async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
+/// let client = imgflip::Client::new();
+/// let memes = client.memes().await?;
+/// println!("much memes. very easy. wow.\n{:?}", memes);
+/// # Ok(())
+/// # }
+/// ```
 pub struct Client {
     client: reqwest::Client,
 }
 
 impl Client {
+	/// Creates a new instance with default values
     pub fn new() -> Self {
         Client {
             client: reqwest::Client::new(),
         }
     }
 
+	/// Calls the `/get_memes` endpoint to return a list of popular meme templates
     pub async fn memes(&self) -> Result<Vec<MemeTemplate>> {
         self.client
             .get("https://api.imgflip.com/get_memes")
