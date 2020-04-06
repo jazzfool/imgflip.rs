@@ -55,11 +55,6 @@ impl MemeTemplate {
 }
 
 #[derive(Debug, Deserialize)]
-struct MemeTemplatesData {
-    memes: Vec<MemeTemplate>,
-}
-
-#[derive(Debug, Deserialize)]
 #[serde(untagged)]
 enum Response<T> {
     SuccessResponse {
@@ -245,14 +240,6 @@ pub enum Error {
     ApiError(String),
 }
 
-#[derive(Debug, Serialize)]
-struct RequestAuthWrapper<T> {
-    #[serde(flatten)]
-    request: T,
-    username: String,
-    password: String,
-}
-
 /// [`Result`](std::result::Result) alias with crate's [`Error`](crate::Error)
 pub type Result<T> = std::result::Result<T, crate::Error>;
 
@@ -282,6 +269,11 @@ impl Client {
     }
 
     async fn client_memes(client: &reqwest::Client) -> Result<Vec<MemeTemplate>> {
+        #[derive(Debug, Deserialize)]
+        struct MemeTemplatesData {
+            memes: Vec<MemeTemplate>,
+        }
+
         client
             .get("https://api.imgflip.com/get_memes")
             .send()
@@ -323,6 +315,14 @@ impl AccountClient {
         &self,
         image_caption: CaptionBoxesRequest,
     ) -> Result<CaptionImageResponse> {
+        #[derive(Debug, Serialize)]
+        struct RequestAuthWrapper<T> {
+            #[serde(flatten)]
+            request: T,
+            username: String,
+            password: String,
+        }
+
         self.client
             .post("https://api.imgflip.com/caption_image")
             .header(
