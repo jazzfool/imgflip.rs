@@ -1,41 +1,16 @@
-use imgflip::{
-    AccountClient, CaptionBox, CaptionBoxesRequest, CaptionFont, CommonCaptionRequest,
-    ImageCaptionRequest,
-};
+use imgflip::{AccountClient, CaptionBoxBuilder, CaptionBoxesRequestBuilder, ImageCaptionRequest};
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    let meme_caption = ImageCaptionRequest::CaptionBoxesRequest(CaptionBoxesRequest {
-        common: CommonCaptionRequest {
-            template_id: "61580".into(),
-            font: Some(CaptionFont::Arial),
-            max_font_size: Some(42),
-        },
-        boxes: vec![
-            CaptionBox {
-                text: "".into(),
-                x: None,
-                y: None,
-                width: None,
-                height: None,
-                color: None,
-                outline_color: None,
-            },
-            CaptionBox {
-                text: "text1".into(),
-                x: None,
-                y: None,
-                width: None,
-                height: None,
-                color: None,
-                outline_color: None,
-            },
-        ],
-    });
-    let caption_image = AccountClient::new("freeforall6".to_string(), "nsfw1234".to_string())
-        .caption_image(meme_caption)
+    let meme_caption = CaptionBoxesRequestBuilder::new("61580")
+        .caption_box(CaptionBoxBuilder::new("first text").build())
+        .caption_box(CaptionBoxBuilder::new("second text").build())
+        .build();
+
+    let caption_image = AccountClient::new("freeforall6", "nsfw1234")
+        .caption_image(ImageCaptionRequest::CaptionBoxesRequest(meme_caption))
         .await?;
-    println!("{:#?}", caption_image);
+    println!("Not sure if good meme\n{}", caption_image.url());
 
     Ok(())
 }
