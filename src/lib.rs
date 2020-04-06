@@ -194,14 +194,14 @@ pub struct Client {
 }
 
 impl Client {
-	/// Creates a new instance with default values
+    /// Creates a new instance with default values
     pub fn new() -> Self {
         Client {
             client: reqwest::Client::new(),
         }
     }
 
-	/// Calls the `/get_memes` endpoint to return a list of popular meme templates
+    /// Calls the `/get_memes` endpoint to return a list of popular meme templates
     pub async fn memes(&self) -> Result<Vec<MemeTemplate>> {
         self.client
             .get("https://api.imgflip.com/get_memes")
@@ -215,6 +215,9 @@ impl Client {
     }
 }
 
+/// Client for `api.imgflip.com` that can caption meme templates
+///
+/// Unlike [`Client`](imgflip::Client) this requires an account on [imgflip.com](https://imgflip.com/signup).
 pub struct AccountClient {
     username: String,
     password: String,
