@@ -2,7 +2,7 @@ use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-/// A blank meme template that can be captioned with text boxes
+/// Blank meme template that can be captioned with text boxes
 #[derive(Debug, Deserialize)]
 pub struct MemeTemplate {
     id: String,
@@ -130,10 +130,23 @@ pub enum ImageCaptionRequest {
     CaptionBoxesRequest(CaptionBoxesRequest),
 }
 
+/// A captioned meme template
 #[derive(Debug, Deserialize)]
 pub struct CaptionImageResponse {
     url: Url,
     page_url: Url,
+}
+
+impl CaptionImageResponse {
+    /// Returns the URL of the generated captioned image
+    pub fn url(&self) -> &Url {
+        &self.url
+    }
+
+    /// Returns the URL of the generated captioned image page
+    pub fn page_url(&self) -> &Url {
+        &self.page_url
+    }
 }
 
 #[derive(Debug)]
@@ -225,14 +238,16 @@ pub struct AccountClient {
 }
 
 impl AccountClient {
-    pub fn new(username: String, password: String) -> Self {
+    /// Creates a new instance for the given account
+    pub fn new<S: Into<String>>(username: S, password: S) -> Self {
         AccountClient {
             client: reqwest::Client::new(),
-            username,
-            password,
+            username: username.into(),
+            password: password.into(),
         }
     }
 
+    /// Calls the `/caption_image` endpoint to add caption boxes to a meme template
     pub async fn caption_image(
         &self,
         image_caption: ImageCaptionRequest,
