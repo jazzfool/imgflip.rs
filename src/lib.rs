@@ -92,9 +92,9 @@ pub enum CaptionFont {
 
 #[derive(Debug, Serialize)]
 pub struct CommonCaptionRequest {
-    pub template_id: String,
-    pub font: Option<CaptionFont>,
-    pub max_font_size: Option<u32>,
+    template_id: String,
+    font: Option<CaptionFont>,
+    max_font_size: Option<u32>,
 }
 
 #[derive(Debug, Serialize)]
@@ -107,13 +107,13 @@ pub struct TopBottomCaptionRequest {
 
 #[derive(Debug, Serialize)]
 pub struct CaptionBox {
-    pub text: String,
-    pub x: Option<u32>,
-    pub y: Option<u32>,
-    pub width: Option<u32>,
-    pub height: Option<u32>,
-    pub color: Option<String>,
-    pub outline_color: Option<String>,
+    text: String,
+    x: Option<u32>,
+    y: Option<u32>,
+    width: Option<u32>,
+    height: Option<u32>,
+    color: Option<String>,
+    outline_color: Option<String>,
 }
 
 pub struct CaptionBoxBuilder {
@@ -173,8 +173,8 @@ impl CaptionBoxBuilder {
 #[derive(Debug, Serialize)]
 pub struct CaptionBoxesRequest {
     #[serde(flatten)]
-    pub common: CommonCaptionRequest,
-    pub boxes: Vec<CaptionBox>,
+    common: CommonCaptionRequest,
+    boxes: Vec<CaptionBox>,
 }
 
 #[derive(Debug, Serialize)]
@@ -255,7 +255,7 @@ pub enum ErrorKind {
 }
 
 #[derive(Debug, Serialize)]
-pub struct RequestAuthWrapper<T> {
+struct RequestAuthWrapper<T> {
     #[serde(flatten)]
     request: T,
     username: String,
