@@ -116,6 +116,60 @@ pub struct CaptionBox {
     pub outline_color: Option<String>,
 }
 
+pub struct CaptionBoxBuilder {
+    text: String,
+    x: Option<u32>,
+    y: Option<u32>,
+    width: Option<u32>,
+    height: Option<u32>,
+    color: Option<String>,
+    outline_color: Option<String>,
+}
+
+impl CaptionBoxBuilder {
+    pub fn new<S: Into<String>>(text: S) -> Self {
+        CaptionBoxBuilder {
+            text: text.into(),
+            x: None,
+            y: None,
+            width: None,
+            height: None,
+            color: None,
+            outline_color: None,
+        }
+    }
+
+    pub fn dimension(mut self, x: u32, y: u32, width: u32, height: u32) -> Self {
+        self.x = Some(x);
+        self.y = Some(y);
+        self.width = Some(width);
+        self.height = Some(height);
+        self
+    }
+
+    pub fn color<S: Into<String>>(mut self, color: S) -> Self {
+        self.color = Some(color.into());
+        self
+    }
+
+    pub fn outline_color<S: Into<String>>(mut self, outline_color: S) -> Self {
+        self.outline_color = Some(outline_color.into());
+        self
+    }
+
+    pub fn build(self) -> CaptionBox {
+        CaptionBox {
+            text: self.text,
+            x: self.x,
+            y: self.y,
+            width: self.width,
+            height: self.height,
+            color: self.color,
+            outline_color: self.outline_color,
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct CaptionBoxesRequest {
     #[serde(flatten)]
@@ -128,6 +182,50 @@ pub struct CaptionBoxesRequest {
 pub enum ImageCaptionRequest {
     TopBottomCaptionRequest(TopBottomCaptionRequest),
     CaptionBoxesRequest(CaptionBoxesRequest),
+}
+
+pub struct CaptionBoxesRequestBuilder {
+    template_id: String,
+    font: Option<CaptionFont>,
+    max_font_size: Option<u32>,
+    boxes: Vec<CaptionBox>,
+}
+
+impl CaptionBoxesRequestBuilder {
+    pub fn new<S: Into<String>>(template_id: S) -> Self {
+        CaptionBoxesRequestBuilder {
+            template_id: template_id.into(),
+            font: None,
+            max_font_size: None,
+            boxes: Vec::with_capacity(2),
+        }
+    }
+
+    pub fn font(mut self, font: CaptionFont) -> Self {
+        self.font = Some(font);
+        self
+    }
+
+    pub fn max_font_size(mut self, max_font_size: u32) -> Self {
+        self.max_font_size = Some(max_font_size);
+        self
+    }
+
+    pub fn caption_box(mut self, caption_box: CaptionBox) -> Self {
+        self.boxes.push(caption_box);
+        self
+    }
+
+    pub fn build(self) -> CaptionBoxesRequest {
+        CaptionBoxesRequest {
+            common: CommonCaptionRequest {
+                template_id: self.template_id,
+                font: self.font,
+                max_font_size: self.max_font_size,
+            },
+            boxes: self.boxes,
+        }
+    }
 }
 
 /// A captioned meme template
