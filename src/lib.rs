@@ -91,21 +91,6 @@ pub enum CaptionFont {
 }
 
 #[derive(Debug, Serialize)]
-pub struct CommonCaptionRequest {
-    template_id: String,
-    font: Option<CaptionFont>,
-    max_font_size: Option<u32>,
-}
-
-#[derive(Debug, Serialize)]
-pub struct TopBottomCaptionRequest {
-    #[serde(flatten)]
-    common: CommonCaptionRequest,
-    text_top: String,
-    text_bottom: String,
-}
-
-#[derive(Debug, Serialize)]
 pub struct CaptionBox {
     text: String,
     x: Option<u32>,
@@ -172,16 +157,10 @@ impl CaptionBoxBuilder {
 
 #[derive(Debug, Serialize)]
 pub struct CaptionBoxesRequest {
-    #[serde(flatten)]
-    common: CommonCaptionRequest,
+    template_id: String,
+    font: Option<CaptionFont>,
+    max_font_size: Option<u32>,
     boxes: Vec<CaptionBox>,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(untagged)]
-pub enum ImageCaptionRequest {
-    TopBottomCaptionRequest(TopBottomCaptionRequest),
-    CaptionBoxesRequest(CaptionBoxesRequest),
 }
 
 pub struct CaptionBoxesRequestBuilder {
@@ -218,11 +197,9 @@ impl CaptionBoxesRequestBuilder {
 
     pub fn build(self) -> CaptionBoxesRequest {
         CaptionBoxesRequest {
-            common: CommonCaptionRequest {
-                template_id: self.template_id,
-                font: self.font,
-                max_font_size: self.max_font_size,
-            },
+            template_id: self.template_id,
+            font: self.font,
+            max_font_size: self.max_font_size,
             boxes: self.boxes,
         }
     }
@@ -348,7 +325,7 @@ impl AccountClient {
     /// Calls the `/caption_image` endpoint to add caption boxes to a meme template
     pub async fn caption_image(
         &self,
-        image_caption: ImageCaptionRequest,
+        image_caption: CaptionBoxesRequest,
     ) -> Result<CaptionImageResponse> {
         self.client
             .post("https://api.imgflip.com/caption_image")

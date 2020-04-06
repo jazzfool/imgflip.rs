@@ -1,4 +1,4 @@
-use imgflip::{AccountClient, CaptionBoxBuilder, CaptionBoxesRequestBuilder, ImageCaptionRequest};
+use imgflip::{AccountClient, CaptionBoxBuilder, CaptionBoxesRequestBuilder};
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
@@ -15,10 +15,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         .build();
 
     let (first_meme, second_meme) = futures::join!(
-        client.caption_image(ImageCaptionRequest::CaptionBoxesRequest(first_meme_caption)),
-        client.caption_image(ImageCaptionRequest::CaptionBoxesRequest(
-            second_meme_caption
-        )),
+        client.caption_image(first_meme_caption),
+        client.caption_image(second_meme_caption),
     );
 
     println!("Not sure if good meme\n{}", first_meme?.url());
