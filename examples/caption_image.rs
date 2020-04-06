@@ -2,15 +2,27 @@ use imgflip::{AccountClient, CaptionBoxBuilder, CaptionBoxesRequestBuilder, Imag
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    let meme_caption = CaptionBoxesRequestBuilder::new("61580")
+    let client = AccountClient::new("freeforall6", "nsfw1234");
+
+    let first_meme_caption = CaptionBoxesRequestBuilder::new("61580")
         .caption_box(CaptionBoxBuilder::new("first text").build())
         .caption_box(CaptionBoxBuilder::new("second text").build())
         .build();
 
-    let caption_image = AccountClient::new("freeforall6", "nsfw1234")
-        .caption_image(ImageCaptionRequest::CaptionBoxesRequest(meme_caption))
-        .await?;
-    println!("Not sure if good meme\n{}", caption_image.url());
+    let second_meme_caption = CaptionBoxesRequestBuilder::new("124055727")
+        .caption_box(CaptionBoxBuilder::new("first text").build())
+        .caption_box(CaptionBoxBuilder::new("second text").build())
+        .build();
+
+    let (first_meme, second_meme) = futures::join!(
+        client.caption_image(ImageCaptionRequest::CaptionBoxesRequest(first_meme_caption)),
+        client.caption_image(ImageCaptionRequest::CaptionBoxesRequest(
+            second_meme_caption
+        )),
+    );
+
+    println!("Not sure if good meme\n{}", first_meme?.url());
+    println!("Y'all got any more of that?\n{}", second_meme?.url());
 
     Ok(())
 }
