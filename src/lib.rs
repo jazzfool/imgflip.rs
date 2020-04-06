@@ -76,9 +76,7 @@ impl<T> Response<T> {
     fn convert(self) -> Result<T> {
         match self {
             Response::SuccessResponse { data, .. } => Ok(data),
-            Response::FailureResponse { error_message, .. } => {
-                Err(Error(ErrorKind::ApiError(error_message)))
-            }
+            Response::FailureResponse { error_message, .. } => Err(Error::ApiError(error_message)),
         }
     }
 }
@@ -224,10 +222,14 @@ impl CaptionImageResponse {
     }
 }
 
-#[derive(Debug)]
-pub enum ErrorKind {
-    Reqwest(reqwest::Error),
-    SerdeQs(serde_qs::Error),
+/// [`Error`](std:error:Error) implementation for all crate errors
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("HTTP request/response error")]
+    Reqwest(#[from] reqwest::Error),
+    #[error("form querystring de/serialization error")]
+    SerdeQs(#[from] serde_qs::Error),
+    #[error("API error: {0}")]
     ApiError(String),
 }
 
@@ -237,29 +239,6 @@ struct RequestAuthWrapper<T> {
     request: T,
     username: String,
     password: String,
-}
-
-#[derive(Debug)]
-pub struct Error(ErrorKind);
-
-impl std::error::Error for Error {}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "todo")
-    }
-}
-
-impl From<reqwest::Error> for Error {
-    fn from(e: reqwest::Error) -> Self {
-        Self(ErrorKind::Reqwest(e))
-    }
-}
-
-impl From<serde_qs::Error> for Error {
-    fn from(e: serde_qs::Error) -> Self {
-        Self(ErrorKind::SerdeQs(e))
-    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
