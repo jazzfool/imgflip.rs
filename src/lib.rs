@@ -2,6 +2,7 @@ use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+/// A blank meme template that can be captioned with text boxes
 #[derive(Debug, Deserialize)]
 pub struct MemeTemplate {
     id: String,
@@ -10,6 +11,47 @@ pub struct MemeTemplate {
     width: u32,
     height: u32,
     box_count: u32,
+}
+
+impl MemeTemplate {
+    /// Returns the identifier of this meme template.
+    ///
+    /// This equals the required `template_id` input parameter for the `/caption_image` API endpoint.
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    /// Returns the name of this meme template.
+    ///
+    /// This is a human readable english string such as "Grumpy Cat".
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Returns the URL of the blank image for this meme template.
+    ///
+    /// This is an image with the dimensions given in `width` and `height`,
+    /// without any caption boxes.
+    pub fn url(&self) -> &Url {
+        &self.url
+    }
+
+    /// Returns the width in pixels of the blank image for this meme template.
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    /// Returns the height in pixels of the blank image for this meme template.
+    pub fn height(&self) -> u32 {
+        self.height
+    }
+
+    /// Returns the number of caption boxes that this meme templates uses.
+    ///
+    /// Some memes have more than just a top and bottom text by default.
+    pub fn box_count(&self) -> u32 {
+        self.box_count
+    }
 }
 
 #[derive(Debug, Deserialize)]
