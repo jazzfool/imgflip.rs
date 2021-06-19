@@ -7,25 +7,20 @@ description = """
 HTTP API wrapper for the meme generator `api.imgflip.com`
 """
 readme = "README-crate.md"
-categories = [
-	"api-bindings",
-]
-keywords = [
-	"meme",
-	"imgflip",
-]
+categories = ["api-bindings"]
+keywords = ["meme", "imgflip"]
 repository = "https://github.com/robo9k/imgflip.rs"
 license = "MIT OR Apache-2.0"
 exclude = ["/examples/", ".gitignore"]
 
 [badges]
-maintenance = { status = "experimental" }
+maintenance = { status="experimental" }
 
 [dependencies]
-reqwest = { version = "0.10.4", features = ["json"] }
-tokio = { version = "0.2.13", features = ["macros"] }
-serde = { version = "1.0.105", features = ["derive"] }
-serde_qs = "0.5.2"
-url = { version = "2.1.1", features = ["serde"] }
+reqwest = { version="0.11", features=["json"] }
+tokio = { version="1.7", features=["macros"] }
+serde = { version="1.0.105", features=["derive"] }
+serde_qs = "0.8"
+url = { version="2.1.1", features=["serde"] }
 futures = "0.3"
 thiserror = "1.0"
